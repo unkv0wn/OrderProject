@@ -1,0 +1,15 @@
+# Dependências
+node_modules/             # Ignora a pasta que contém as dependências do projeto (regenerável com npm install ou yarn install)
+
+# Arquivos de ambiente
+.env                      # Ignora arquivos de variáveis de ambiente
+
+
+# Arquivos de sistema e temporários de editor
+.DS_Store                 # Ignora arquivos do sistema do MacOS
+Thumbs.db                 # Ignora arquivos de cache do Windows
+.idea/                    # Ignora pastas de configurações do JetBrains IDEs (como o IntelliJ, WebStorm)
+.vscode/                  # Ignora pastas de configurações do VS Code
+*.swp                     # Arquivos temporários do Vim
+*~                        # Arquivos temporários de editores de texto
+
