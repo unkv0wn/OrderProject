@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:orderview/src/utils/colors/colors.dart';
 import 'package:orderview/src/widgets/button/custombutton_widget.dart';
 import 'package:orderview/src/widgets/form/forminput_widgets.dart';
 
@@ -55,7 +56,7 @@ class PaymentformScreen extends StatelessWidget {
                     child: CustomButton(
                       text: "Cadastrar",
                       onPressed: () {},
-                      backgroundColor: Colors.amber,
+                      backgroundColor: AppColors.primaryBlue,
                       icon: LucideIcons.save,
                     ),
                   ),

@@ -35,7 +35,7 @@ class FormInput extends StatelessWidget {
               ),
           ],
         ),
-        SizedBox(height: 10),
+        SizedBox(height: 8),
         TextFormField(
           controller: customController,
           decoration: InputDecoration(

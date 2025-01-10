@@ -1,12 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:orderview/src/utils/colors/colors.dart';
 import 'package:orderview/src/widgets/button/custombutton_widget.dart';
+import 'package:orderview/src/widgets/dropdown/dropdown_wigdet.dart';
 import 'package:orderview/src/widgets/form/forminput_widgets.dart';
 
 class ProductsScreen extends StatelessWidget {
   ProductsScreen({super.key});
 
   final TextEditingController _customController = TextEditingController();
+  final TextEditingController _unidadeDescController = TextEditingController();
+  final TextEditingController _marcaDescController = TextEditingController();
+  final ValueNotifier<String> dropValue = ValueNotifier<String>(" ");
+  final ValueNotifier<String> dropValueMark = ValueNotifier<String>(" ");
+
+  final Map<String, String> unidadesDeMedida = {
+    'KG': 'Quilograma',
+    'G': 'Grama',
+    'MG': 'Miligrama',
+  };
+
+  final Map<String, String> marcas = {
+    '1': 'MarcaX',
+    '2': 'MarcaY',
+    '3': 'MarcaZ',
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -59,22 +77,26 @@ class ProductsScreen extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: FormInput(
-                          labelText: "Unidade de Medida",
-                          customController: _customController,
-                          isRequired: true,
-                          validadorCustom: (value) {
-                            return null;
-                          },
-                          hintText: "UN"),
+                      child: CustomDropdown(
+                        valueNotifier: dropValue,
+                        items: unidadesDeMedida.keys.toList(),
+                        hint: "Unidade",
+                        labelText: "Unidade Medida",
+                        isRequired: true, // Exibirá o '*' ao lado do rótulo
+                        onChanged: (newValue) {
+                          _unidadeDescController.text =
+                              unidadesDeMedida[newValue] ?? '';
+                        },
+                      ),
                     ),
                     SizedBox(
                       width: 10,
                     ),
                     Expanded(
+                      flex: 8,
                       child: FormInput(
                           labelText: "Descrição",
-                          customController: _customController,
+                          customController: _unidadeDescController,
                           isRequired: true,
                           validadorCustom: (value) {
                             return null;
@@ -86,22 +108,25 @@ class ProductsScreen extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: FormInput(
-                          labelText: "Marca",
-                          customController: _customController,
-                          isRequired: true,
-                          validadorCustom: (value) {
-                            return null;
-                          },
-                          hintText: "1"),
+                      child: CustomDropdown(
+                        valueNotifier: dropValueMark,
+                        items: marcas.keys.toList(),
+                        hint: "Marca",
+                        labelText: "Marca",
+                        isRequired: true,
+                        onChanged: (newValue) {
+                          _marcaDescController.text = marcas[newValue] ?? '';
+                        },
+                      ),
                     ),
                     SizedBox(
                       width: 10,
                     ),
                     Expanded(
+                      flex: 8,
                       child: FormInput(
                           labelText: "Descrição",
-                          customController: _customController,
+                          customController: _marcaDescController,
                           isRequired: true,
                           validadorCustom: (value) {
                             return null;
@@ -127,7 +152,7 @@ class ProductsScreen extends StatelessWidget {
                     child: CustomButton(
                       text: "Cadastrar",
                       onPressed: () {},
-                      backgroundColor: Colors.amber,
+                      backgroundColor: AppColors.primaryBlue,
                       icon: LucideIcons.save,
                     ),
                   ),
