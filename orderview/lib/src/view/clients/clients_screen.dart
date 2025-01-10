@@ -176,7 +176,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
                           context,
                           title: "Sucesso",
                           message: "A operação foi concluída com êxito.",
-                          icon: LucideIcons.squareCheck,
+                          icon: LucideIcons.circleCheck,
                           iconColor: Colors.green,
                           confirmText: "OK",
                           onConfirm: () {

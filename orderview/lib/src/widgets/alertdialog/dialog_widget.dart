@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:orderview/src/utils/colors/colors.dart';
 
 class CustomDialog {
@@ -21,9 +22,10 @@ class CustomDialog {
         return Center(
           child: Container(
             padding: const EdgeInsets.all(16),
-            width: MediaQuery.of(context).size.width * 0.3,
+            width: 350,
+            height: 350,
             decoration: BoxDecoration(
-              color: Color(0xFF1d1b20).withOpacity(0.7),
+              color: Color(0xFF1d1b20),
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
@@ -35,50 +37,65 @@ class CustomDialog {
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment
+                  .center, // Centralizando o conteúdo verticalmente
+              crossAxisAlignment: CrossAxisAlignment
+                  .center, // Centralizando o conteúdo horizontalmente
               children: [
+                Spacer(),
                 if (icon != null)
                   Icon(
                     icon,
-                    size: 64,
+                    size: 84,
                     color: iconColor,
                   ),
                 SizedBox(height: 16),
                 Text(
                   title,
                   style: TextStyle(
-                      fontSize: 21,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 21,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign
+                      .center, // Garantir que o título está centralizado
                 ),
                 SizedBox(height: 8),
                 Text(
                   message,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 17, color: Colors.white),
+                  textAlign: TextAlign
+                      .center, // Garantir que a mensagem está centralizada
+                  style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white.withOpacity(0.5),
+                      fontSize: 19,
+                      letterSpacing: 1.5),
                 ),
-                SizedBox(height: 16),
+                Spacer(),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment:
+                      MainAxisAlignment.center, // Centralizando o botão
                   children: [
                     if (confirmText.isNotEmpty)
-                      SizedBox(
-                        width: 150,
-                        height: 40,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                            if (onConfirm != null) onConfirm();
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primaryBlue,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                  10), // Altere o valor para o grau de arredondamento desejado
+                      Expanded(
+                        child: SizedBox(
+                          height: 50,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              if (onConfirm != null) onConfirm();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primaryBlue,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                             ),
-                          ),
-                          child: Text(
-                            confirmText,
-                            style: TextStyle(color: Colors.white, fontSize: 17),
+                            child: Text(
+                              confirmText,
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 17),
+                            ),
                           ),
                         ),
                       )
