@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:orderview/src/utils/colors/colors.dart';
+import 'package:orderview/src/widgets/alertdialog/dialog_widget.dart';
 import 'package:orderview/src/widgets/button/custombutton_widget.dart';
 import 'package:orderview/src/widgets/date/date_widget.dart';
 import 'package:orderview/src/widgets/dropdown/dropdown_wigdet.dart';
@@ -170,7 +171,19 @@ class _ClientsScreenState extends State<ClientsScreen> {
                     height: 50,
                     child: CustomButton(
                       text: "Cadastrar",
-                      onPressed: () {},
+                      onPressed: () {
+                        CustomDialog.show(
+                          context,
+                          title: "Sucesso",
+                          message: "A operação foi concluída com êxito.",
+                          icon: LucideIcons.squareCheck,
+                          iconColor: Colors.green,
+                          confirmText: "OK",
+                          onConfirm: () {
+                            print("Ação confirmada!");
+                          },
+                        );
+                      },
                       backgroundColor: AppColors.primaryBlue,
                       icon: LucideIcons.save,
                     ),
