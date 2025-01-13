@@ -1,13 +1,31 @@
+import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:orderview/src/utils/colors/colors.dart';
 import 'package:orderview/src/widgets/button/custombutton_widget.dart';
+import 'package:orderview/src/widgets/dropdown/dropdown_wigdet.dart';
 import 'package:orderview/src/widgets/form/forminput_widgets.dart';
+import 'package:orderview/src/widgets/table/table_widget.dart';
 
-class PaymentformScreen extends StatelessWidget {
-  PaymentformScreen({super.key});
+class PaymentformScreen extends StatefulWidget {
+  const PaymentformScreen({super.key});
 
+  @override
+  State<PaymentformScreen> createState() => _PaymentformScreenState();
+}
+
+class _PaymentformScreenState extends State<PaymentformScreen> {
   final TextEditingController _customController = TextEditingController();
+  final ValueNotifier<String> dropValueMark = ValueNotifier<String>(" ");
+  final List<String> unidadesDeMedida = ['R', 'AVD', 'BR', 'EST', 'CND'];
+  final int _rowsPerPage = 10;
+
+  // Simulação de dados (Fonte para a tabela)
+  final List<Map<String, dynamic>> _data = [
+    {'Código': 'DI', 'Descricao': 'DINHEIRO', 'Ativo': 'S'},
+    {'Código': 'BL', 'Descricao': 'BOLETO', 'Ativo': 'F'},
+    {'Código': 'PIX', 'Descricao': 'PIX', 'Ativo': 'S'},
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -29,24 +47,24 @@ class PaymentformScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 16),
                 FormInput(
-                    labelText: "Codigo Forma Pagamento",
-                    customController: _customController,
-                    isRequired: true,
-                    validadorCustom: (value) {
-                      return null;
-                    },
-                    hintText: "BL"),
-                SizedBox(
-                  height: 8,
+                  labelText: "Codigo Forma Pagamento",
+                  customController: _customController,
+                  isRequired: true,
+                  validadorCustom: (value) {
+                    return null;
+                  },
+                  hintText: "BL",
                 ),
+                SizedBox(height: 8),
                 FormInput(
-                    labelText: "Descrição Forma Pagamento",
-                    customController: _customController,
-                    isRequired: true,
-                    validadorCustom: (value) {
-                      return null;
-                    },
-                    hintText: "Boleto"),
+                  labelText: "Descrição Forma Pagamento",
+                  customController: _customController,
+                  isRequired: true,
+                  validadorCustom: (value) {
+                    return null;
+                  },
+                  hintText: "Boleto",
+                ),
                 SizedBox(height: 24),
                 Align(
                   alignment: Alignment.centerRight,
@@ -60,7 +78,59 @@ class PaymentformScreen extends StatelessWidget {
                       icon: LucideIcons.save,
                     ),
                   ),
-                )
+                ),
+                Spacer(),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: SizedBox(
+                    width: 120,
+                    height: 60,
+                    child: CustomDropdown(
+                      valueNotifier: dropValueMark,
+                      items: unidadesDeMedida,
+                      hint: "Filtros",
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.8,
+                  height: MediaQuery.of(context).size.height * 0.4,
+                  child: CustomPaginatedDataTable<Map<String, dynamic>>(
+                    data:
+                        _data, // Aqui você pode passar diferentes listas de dados
+                    columns: const [
+                      DataColumn2(
+                        size: ColumnSize.S,
+                        label: Text(
+                          'Código',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      DataColumn2(
+                        size: ColumnSize.M,
+                        label: Text(
+                          'Descricao',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      DataColumn2(
+                        size: ColumnSize.S,
+                        label: Text(
+                          'Ativo',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ],
+                    cellBuilders: [
+                      (row) => DataCell(Text(row['Código'],
+                          style: TextStyle(color: Colors.white))),
+                      (row) => DataCell(Text(row['Descricao'],
+                          style: TextStyle(color: Colors.white))),
+                      (row) => DataCell(Text(row['Ativo'],
+                          style: TextStyle(color: Colors.white))),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),

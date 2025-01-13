@@ -37,6 +37,7 @@ dependencies:
   lucide_icons_flutter: ^1.2.5
   google_fonts: ^6.2.1
   intl: ^0.20.1
+  data_table_2: ^2.5.18
 
 dev_dependencies:
   flutter_test:

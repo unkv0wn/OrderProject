@@ -1,12 +1,14 @@
+import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:orderview/src/utils/colors/colors.dart';
-import 'package:orderview/src/widgets/alertdialog/dialog_widget.dart';
+import 'package:orderview/src/utils/dialoginfos/dialoginfo.dart';
 import 'package:orderview/src/widgets/button/custombutton_widget.dart';
 import 'package:orderview/src/widgets/date/date_widget.dart';
 import 'package:orderview/src/widgets/dropdown/dropdown_wigdet.dart';
 import 'package:orderview/src/widgets/form/forminput_widgets.dart';
 import 'package:intl/intl.dart';
+import 'package:orderview/src/widgets/table/table_widget.dart';
 
 class ClientsScreen extends StatefulWidget {
   const ClientsScreen({super.key});
@@ -37,6 +39,30 @@ class _ClientsScreenState extends State<ClientsScreen> {
     'BR',
     'EST',
     'CND',
+  ];
+
+  final List<Map<String, dynamic>> _data = [
+    {
+      'Código': 'A1',
+      'Nome': 'João Silva',
+      'CPF': '123.456.789-00',
+      'Cidade': 'São Paulo',
+      'CEP': '01000-000',
+    },
+    {
+      'Código': 'A2',
+      'Nome': 'Maria Oliveira',
+      'CPF': '987.654.321-00',
+      'Cidade': 'Rio de Janeiro',
+      'CEP': '02000-000',
+    },
+    {
+      'Código': 'A3',
+      'Nome': 'Carlos Pereira',
+      'CPF': '456.789.123-00',
+      'Cidade': 'Belo Horizonte',
+      'CEP': '03000-000',
+    },
   ];
 
   @override
@@ -172,23 +198,82 @@ class _ClientsScreenState extends State<ClientsScreen> {
                     child: CustomButton(
                       text: "Cadastrar",
                       onPressed: () {
-                        CustomDialog.show(
-                          context,
-                          title: "Sucesso",
-                          message: "A operação foi concluída com êxito.",
-                          icon: LucideIcons.circleCheck,
-                          iconColor: Colors.green,
-                          confirmText: "OK",
-                          onConfirm: () {
-                            print("Ação confirmada!");
-                          },
-                        );
+                        DialogsInfo.showErrorDialog(context);
                       },
                       backgroundColor: AppColors.primaryBlue,
                       icon: LucideIcons.save,
                     ),
                   ),
                 ),
+                Spacer(),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: SizedBox(
+                      width: 120,
+                      height: 60,
+                      child: CustomDropdown(
+                          valueNotifier: dropValueMark,
+                          items: unidadesDeMedida,
+                          hint: "Filtros")),
+                ),
+                //table
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.8,
+                  height: MediaQuery.of(context).size.height * 0.4,
+                  child: CustomPaginatedDataTable<Map<String, dynamic>>(
+                    data:
+                        _data, // Aqui você pode passar diferentes listas de dados
+                    columns: const [
+                      DataColumn2(
+                        size: ColumnSize.S,
+                        label: Text(
+                          'Código',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      DataColumn2(
+                        size: ColumnSize.M,
+                        label: Text(
+                          'Nome',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      DataColumn2(
+                        size: ColumnSize.S,
+                        label: Text(
+                          'CPF',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      DataColumn2(
+                        size: ColumnSize.M,
+                        label: Text(
+                          'Cidade',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      DataColumn2(
+                        size: ColumnSize.S,
+                        label: Text(
+                          'CEP',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ],
+                    cellBuilders: [
+                      (row) => DataCell(Text(row['Código'],
+                          style: TextStyle(color: Colors.white))),
+                      (row) => DataCell(Text(row['Nome'],
+                          style: TextStyle(color: Colors.white))),
+                      (row) => DataCell(Text(row['CPF'],
+                          style: TextStyle(color: Colors.white))),
+                      (row) => DataCell(Text(row['Cidade'],
+                          style: TextStyle(color: Colors.white))),
+                      (row) => DataCell(Text(row['CEP'],
+                          style: TextStyle(color: Colors.white))),
+                    ],
+                  ),
+                )
               ],
             ),
           ),

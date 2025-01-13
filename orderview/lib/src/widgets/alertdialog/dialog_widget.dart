@@ -68,8 +68,8 @@ class CustomDialog {
                   style: GoogleFonts.poppins(
                       fontWeight: FontWeight.w500,
                       color: Colors.white.withOpacity(0.5),
-                      fontSize: 19,
-                      letterSpacing: 1.5),
+                      fontSize: 17,
+                      letterSpacing: 2.0),
                 ),
                 Spacer(),
                 Row(
@@ -109,3 +109,4 @@ class CustomDialog {
     );
   }
 }
+

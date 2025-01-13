@@ -1,13 +1,32 @@
+import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:orderview/src/utils/colors/colors.dart';
 import 'package:orderview/src/widgets/button/custombutton_widget.dart';
+import 'package:orderview/src/widgets/dropdown/dropdown_wigdet.dart';
 import 'package:orderview/src/widgets/form/forminput_widgets.dart';
+import 'package:orderview/src/widgets/table/table_widget.dart';
 
 class PublicplaceScreen extends StatelessWidget {
   PublicplaceScreen({super.key});
 
   final TextEditingController _customController = TextEditingController();
+
+  final ValueNotifier<String> dropValueMark = ValueNotifier<String>(" ");
+
+  final List<String> unidadesDeMedida = [
+    'R',
+    'AVD',
+    'BR',
+    'EST',
+    'CND',
+  ];
+
+  final List<Map<String, dynamic>> _data = [
+    {'Código': 'R', 'Descricao': 'RUA', 'Ativo': 'S'},
+    {'Código': 'AV', 'Descricao': 'AVENIDA', 'Ativo': 'F'},
+    {'Código': 'BR', 'Descricao': 'RODOVIA', 'Ativo': 'S'},
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +78,56 @@ class PublicplaceScreen extends StatelessWidget {
                       backgroundColor: AppColors.primaryBlue,
                       icon: LucideIcons.save,
                     ),
+                  ),
+                ),
+                Spacer(),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: SizedBox(
+                      width: 120,
+                      height: 60,
+                      child: CustomDropdown(
+                          valueNotifier: dropValueMark,
+                          items: unidadesDeMedida,
+                          hint: "Filtros")),
+                ),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.8,
+                  height: MediaQuery.of(context).size.height * 0.4,
+                  child: CustomPaginatedDataTable<Map<String, dynamic>>(
+                    data:
+                        _data, // Aqui você pode passar diferentes listas de dados
+                    columns: const [
+                      DataColumn2(
+                        size: ColumnSize.S,
+                        label: Text(
+                          'Código',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      DataColumn2(
+                        size: ColumnSize.M,
+                        label: Text(
+                          'Descricao',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      DataColumn2(
+                        size: ColumnSize.S,
+                        label: Text(
+                          'Ativo',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ],
+                    cellBuilders: [
+                      (row) => DataCell(Text(row['Código'],
+                          style: TextStyle(color: Colors.white))),
+                      (row) => DataCell(Text(row['Descricao'],
+                          style: TextStyle(color: Colors.white))),
+                      (row) => DataCell(Text(row['Ativo'],
+                          style: TextStyle(color: Colors.white))),
+                    ],
                   ),
                 )
               ],
