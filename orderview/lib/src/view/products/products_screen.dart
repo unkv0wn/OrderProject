@@ -1,26 +1,47 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:orderview/src/models/mark_model.dart';
+import 'package:orderview/src/models/product_model.dart';
+import 'package:orderview/src/models/unitymeasurement_model.dart';
 import 'package:orderview/src/utils/colors/colors.dart';
+import 'package:orderview/src/utils/dialoginfos/dialoginfo.dart';
+import 'package:orderview/src/view/mark/service/mark_service.dart';
+import 'package:orderview/src/view/products/service/product_service.dart';
+import 'package:orderview/src/view/unit/service/unit_service.dart';
 import 'package:orderview/src/widgets/button/custombutton_widget.dart';
 import 'package:orderview/src/widgets/dropdown/dropdown_wigdet.dart';
 import 'package:orderview/src/widgets/form/forminput_widgets.dart';
 import 'package:orderview/src/widgets/table/table_widget.dart';
 
-class ProductsScreen extends StatelessWidget {
-  ProductsScreen({super.key});
+class ProductsScreen extends StatefulWidget {
+  const ProductsScreen({super.key});
 
-  final TextEditingController _customController = TextEditingController();
+  @override
+  State<ProductsScreen> createState() => _ProductsScreenState();
+}
+
+class _ProductsScreenState extends State<ProductsScreen> {
+  final logger = Logger();
+
+  final TextEditingController _cdProdutoController = TextEditingController();
+  final TextEditingController _dsProdutoController = TextEditingController();
+  final TextEditingController _unidadeProdutoController =
+      TextEditingController();
+  final TextEditingController _marcaProdutoController = TextEditingController();
+  final TextEditingController _vlProdutoController = TextEditingController();
+
   final TextEditingController _unidadeDescController = TextEditingController();
   final TextEditingController _marcaDescController = TextEditingController();
+
   final ValueNotifier<String> dropValue = ValueNotifier<String>(" ");
+
   final ValueNotifier<String> dropValueMark = ValueNotifier<String>(" ");
 
-  final Map<String, String> unidadesDeMedida = {
-    'KG': 'Quilograma',
-    'G': 'Grama',
-    'MG': 'Miligrama',
-  };
+  // Lista de dados para a tabela
+  List<Map<String, dynamic>> _unitymeasurement = [];
+  List<Map<String, dynamic>> _marks = [];
 
   final Map<String, String> marcas = {
     '1': 'MarcaX',
@@ -38,29 +59,111 @@ class ProductsScreen extends StatelessWidget {
     'CND',
   ];
 
-  final List<Map<String, dynamic>> _data = [
-    {
-      'Código': '1',
-      'Descricao': 'Produto Exemplo',
-      'Unidade': 'UN',
-      'Marca': 'MarcaX',
-      'Ativo': 'S'
-    },
-    {
-      'Código': '2',
-      'Descricao': 'Produto Exemplo2',
-      'Unidade': 'CM',
-      'Marca': 'MarcaY',
-      'Ativo': 'F'
-    },
-    {
-      'Código': '3',
-      'Descricao': 'Produto Exemplo3',
-      'Unidade': 'KG',
-      'Marca': 'MarcaZ',
-      'Ativo': 'S'
-    },
-  ];
+  // Lista de dados para a tabela
+  List<Map<String, dynamic>> _data = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProducts();
+    _loadUnits();
+    _loadMarks(); // Carregar dados da API quando a tela for carregada
+  }
+
+  Future<void> _loadMarks() async {
+    try {
+      final service = MarkService();
+      List<MarkModel> forms = await service.getAllMark();
+
+      setState(() {
+        _marks = forms.map((form) {
+          return {
+            'Código': form.cdMarca ?? 'N/A',
+            'Descricao': form.dsMarca ?? 'N/A',
+            'Ativo': form.stAtivo == 'S' ? 'Sim' : 'Não',
+          };
+        }).toList();
+      });
+    } catch (e) {
+      logger.e('Erro ao carregar dados', error: e);
+    }
+  }
+
+  // Função para carregar os dados da API
+  Future<void> _loadUnits() async {
+    try {
+      final service = UnitService();
+      List<UnitMeasurementModel> forms = await service.getAllUnitys();
+
+      setState(() {
+        _unitymeasurement = forms.map((form) {
+          return {
+            'Código': form.cdUnidade ?? 'N/A',
+            'Descricao': form.dsUnidade ?? 'N/A',
+            'Ativo': form.stAtivo == 'S' ? 'Sim' : 'Não',
+          };
+        }).toList();
+      });
+    } catch (e) {
+      logger.e('Erro ao carregar dados', error: e);
+    }
+  }
+
+  // Função para carregar os dados da API
+  Future<void> _loadProducts() async {
+    try {
+      final service = ProductService();
+      List<ProductModel> forms = await service.getAllProducts();
+
+      final markload = MarkService();
+
+      List<MarkModel> formsMarks = await markload.getAllMark();
+      setState(() {
+        _data = forms.map((form) {
+          MarkModel marca = formsMarks.firstWhere(
+            (marca) => marca.cdMarca == form.cdMarca,
+            orElse: () => MarkModel(cdMarca: '', dsMarca: 'N/A', stAtivo: 'N'),
+          );
+
+          return {
+            'Código': form.idProduto?.toString() ?? 'N/A',
+            'Descricao': form.dsNome ?? 'N/A',
+            'Unidade': form.cdUnidade ?? 'N/A',
+            'Marca': marca.dsMarca,
+            'Ativo': form.stStatus == 'S' ? 'Sim' : 'Não',
+          };
+        }).toList();
+      });
+    } catch (e) {
+      logger.e('Erro ao carregar dados', error: e);
+    }
+  }
+
+  Future<void> _createProduct() async {
+    if (_dsProdutoController.text.isEmpty ||
+        _unidadeProdutoController.text.isEmpty ||
+        _marcaProdutoController.text.isEmpty ||
+        _vlProdutoController.text.isEmpty) {
+      return DialogsInfo.showAlertDialog(context);
+    }
+
+    try {
+      final product = ProductModel(
+          dsNome: _dsProdutoController.text,
+          cdUnidade: _unidadeProdutoController.text,
+          cdMarca: _marcaProdutoController.text,
+          vlPreco: _vlProdutoController.text);
+
+      await ProductService().createProduct(product);
+
+      _loadProducts();
+
+      DialogsInfo.showSuccessDialog(context);
+    } catch (e) {
+      logger.e('Error ao cadastrar Produto', error: e);
+      DialogsInfo.showErrorDialog(context);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +190,7 @@ class ProductsScreen extends StatelessWidget {
                       flex: 1,
                       child: FormInput(
                           labelText: "Codigo",
-                          customController: _customController,
+                          customController: _cdProdutoController,
                           isRequired: true,
                           validadorCustom: (value) {
                             return null;
@@ -101,7 +204,7 @@ class ProductsScreen extends StatelessWidget {
                       flex: 8,
                       child: FormInput(
                           labelText: "Descrição",
-                          customController: _customController,
+                          customController: _dsProdutoController,
                           isRequired: true,
                           validadorCustom: (value) {
                             return null;
@@ -115,13 +218,22 @@ class ProductsScreen extends StatelessWidget {
                     Expanded(
                       child: CustomDropdown(
                         valueNotifier: dropValue,
-                        items: unidadesDeMedida.keys.toList(),
+                        items: _unitymeasurement
+                            .map((unit) => unit['Código'] as String)
+                            .toList(),
                         hint: "Unidade",
                         labelText: "Unidade Medida",
                         isRequired: true, // Exibirá o '*' ao lado do rótulo
                         onChanged: (newValue) {
+                          Map<String, dynamic>? selectedUnit =
+                              _unitymeasurement.firstWhere(
+                            (unit) => unit['Código'] == newValue,
+                          );
+
                           _unidadeDescController.text =
-                              unidadesDeMedida[newValue] ?? '';
+                              selectedUnit['Descricao'] ?? '';
+                          _unidadeProdutoController.text =
+                              selectedUnit['Código'] ?? '';
                         },
                       ),
                     ),
@@ -133,7 +245,7 @@ class ProductsScreen extends StatelessWidget {
                       child: FormInput(
                           labelText: "Descrição",
                           customController: _unidadeDescController,
-                          isRequired: true,
+                          isRequired: false,
                           validadorCustom: (value) {
                             return null;
                           },
@@ -146,12 +258,22 @@ class ProductsScreen extends StatelessWidget {
                     Expanded(
                       child: CustomDropdown(
                         valueNotifier: dropValueMark,
-                        items: marcas.keys.toList(),
+                        items: _marks
+                            .map((unit) => unit['Descricao'] as String)
+                            .toList(),
                         hint: "Marca",
                         labelText: "Marca",
                         isRequired: true,
                         onChanged: (newValue) {
-                          _marcaDescController.text = marcas[newValue] ?? '';
+                          final Map<String, dynamic> selectedUnit =
+                              _marks.firstWhere(
+                            (unit) => unit['Descricao'] == newValue,
+                          );
+                          // Atualiza os valores no controlador
+                          _marcaDescController.text =
+                              selectedUnit['Descricao'] ?? '';
+                          _marcaProdutoController.text =
+                              selectedUnit['Código'] ?? '';
                         },
                       ),
                     ),
@@ -173,7 +295,7 @@ class ProductsScreen extends StatelessWidget {
                 ),
                 FormInput(
                     labelText: "Valor Unitario",
-                    customController: _customController,
+                    customController: _vlProdutoController,
                     isRequired: true,
                     validadorCustom: (value) {
                       return null;
@@ -187,7 +309,9 @@ class ProductsScreen extends StatelessWidget {
                     height: 50,
                     child: CustomButton(
                       text: "Cadastrar",
-                      onPressed: () {},
+                      onPressed: () {
+                        _createProduct();
+                      },
                       backgroundColor: AppColors.primaryBlue,
                       icon: LucideIcons.save,
                     ),

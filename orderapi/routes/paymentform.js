@@ -30,7 +30,7 @@ router.post("/", async (req, res) => {
       ds_forma,
     });
 
-    return res.status(201).send("Forma de Pagamento cadastrada com sucesso!");
+    return res.status(201).send({ message : "Forma de Pagamento cadastrada com sucesso!"});
   } catch (error) {
     if (error instanceof Sequelize.UniqueConstraintError) {
       return res.status(409).json({

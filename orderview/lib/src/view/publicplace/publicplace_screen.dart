@@ -1,32 +1,80 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:orderview/src/models/publicplace_model.dart';
 import 'package:orderview/src/utils/colors/colors.dart';
+import 'package:orderview/src/utils/dialoginfos/dialoginfo.dart';
+import 'package:orderview/src/view/publicplace/service/plublicplace_service.dart';
 import 'package:orderview/src/widgets/button/custombutton_widget.dart';
-import 'package:orderview/src/widgets/dropdown/dropdown_wigdet.dart';
+//import 'package:orderview/src/widgets/dropdown/dropdown_wigdet.dart';
 import 'package:orderview/src/widgets/form/forminput_widgets.dart';
 import 'package:orderview/src/widgets/table/table_widget.dart';
 
-class PublicplaceScreen extends StatelessWidget {
-  PublicplaceScreen({super.key});
+class PublicplaceScreen extends StatefulWidget {
+  const PublicplaceScreen({super.key});
 
-  final TextEditingController _customController = TextEditingController();
+  @override
+  State<PublicplaceScreen> createState() => _PublicplaceScreenState();
+}
 
-  final ValueNotifier<String> dropValueMark = ValueNotifier<String>(" ");
+class _PublicplaceScreenState extends State<PublicplaceScreen> {
+  final logger = Logger();
 
-  final List<String> unidadesDeMedida = [
-    'R',
-    'AVD',
-    'BR',
-    'EST',
-    'CND',
-  ];
+  final TextEditingController _cdLogradouroController = TextEditingController();
+  final TextEditingController _dsLogradouroController = TextEditingController();
 
-  final List<Map<String, dynamic>> _data = [
-    {'Código': 'R', 'Descricao': 'RUA', 'Ativo': 'S'},
-    {'Código': 'AV', 'Descricao': 'AVENIDA', 'Ativo': 'F'},
-    {'Código': 'BR', 'Descricao': 'RODOVIA', 'Ativo': 'S'},
-  ];
+  // Lista de dados para a tabela
+  List<Map<String, dynamic>> _data = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPublicPlace(); // Carregar dados da API quando a tela for carregada
+  }
+
+  // Função para carregar os dados da API
+  Future<void> _loadPublicPlace() async {
+    try {
+      final service = PlublicplaceService();
+      List<PublicPlaceModel> forms = await service.getAllPlace();
+
+      // Mapeando os dados para o formato da tabela
+      setState(() {
+        _data = forms.map((form) {
+          return {
+            'Código': form.cdLogradouro ?? 'N/A',
+            'Descricao': form.dsLogradouro ?? 'N/A',
+            'Ativo': form.stAtivo == 'S' ? 'Sim' : 'Não',
+          };
+        }).toList(); // Converte a lista de objetos para o formato de mapa
+      });
+    } catch (e) {
+      logger.e('Erro ao carregar dados', error: e);
+    }
+  }
+
+  Future<void> _createPublicPlace() async {
+    if (_cdLogradouroController.text.isEmpty ||
+        _dsLogradouroController.text.isEmpty) {
+      DialogsInfo.showWarningDialog(context);
+    }
+
+    try {
+      final PublicPlace = PublicPlaceModel(
+          cdLogradouro: _cdLogradouroController.text,
+          dsLogradouro: _dsLogradouroController.text,
+          stAtivo: 'S');
+
+      await PlublicplaceService().createPublicPlace(PublicPlace);
+
+      _loadPublicPlace();
+
+      DialogsInfo.showSuccessDialog(context);
+    } catch (e) {
+      logger.e('Erro ao carregar dados', error: e);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +97,7 @@ class PublicplaceScreen extends StatelessWidget {
                 SizedBox(height: 16),
                 FormInput(
                     labelText: "Codigo Logradouro",
-                    customController: _customController,
+                    customController: _cdLogradouroController,
                     isRequired: true,
                     validadorCustom: (value) {
                       return null;
@@ -60,7 +108,7 @@ class PublicplaceScreen extends StatelessWidget {
                 ),
                 FormInput(
                     labelText: "Descrição Logradouro",
-                    customController: _customController,
+                    customController: _dsLogradouroController,
                     isRequired: true,
                     validadorCustom: (value) {
                       return null;
@@ -74,23 +122,25 @@ class PublicplaceScreen extends StatelessWidget {
                     height: 50,
                     child: CustomButton(
                       text: "Cadastrar",
-                      onPressed: () {},
+                      onPressed: () {
+                        _createPublicPlace();
+                      },
                       backgroundColor: AppColors.primaryBlue,
                       icon: LucideIcons.save,
                     ),
                   ),
                 ),
                 Spacer(),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: SizedBox(
-                      width: 120,
-                      height: 60,
-                      child: CustomDropdown(
-                          valueNotifier: dropValueMark,
-                          items: unidadesDeMedida,
-                          hint: "Filtros")),
-                ),
+                // Align(
+                //   alignment: Alignment.centerLeft,
+                //   child: SizedBox(
+                //       width: 120,
+                //       height: 60,
+                //       child: CustomDropdown(
+                //           valueNotifier: dropValueMark,
+                //           items: unidadesDeMedida,
+                //           hint: "Filtros")),
+                // ),
                 SizedBox(
                   width: MediaQuery.of(context).size.width * 0.8,
                   height: MediaQuery.of(context).size.height * 0.4,

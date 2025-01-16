@@ -13,7 +13,7 @@ class CategoriesWidget extends StatelessWidget {
       child: Text(
         categories.toUpperCase(),
         style: TextStyle(
-            color: AppColors.primaryWhite.withOpacity(0.4),
+            color: AppColors.primaryWhite.withValues(alpha: 0.4),
             fontSize: 14,
             fontWeight: FontWeight.bold,
             letterSpacing: 1.5),

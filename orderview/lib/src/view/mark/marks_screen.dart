@@ -1,16 +1,27 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:orderview/src/models/mark_model.dart';
 import 'package:orderview/src/utils/colors/colors.dart';
+import 'package:orderview/src/utils/dialoginfos/dialoginfo.dart';
+import 'package:orderview/src/view/mark/service/mark_service.dart';
 import 'package:orderview/src/widgets/button/custombutton_widget.dart';
 import 'package:orderview/src/widgets/dropdown/dropdown_wigdet.dart';
 import 'package:orderview/src/widgets/form/forminput_widgets.dart';
 import 'package:orderview/src/widgets/table/table_widget.dart';
 
-class MarksScreen extends StatelessWidget {
-  MarksScreen({super.key});
+class MarksScreen extends StatefulWidget {
+  const MarksScreen({super.key});
 
-  final TextEditingController _customController = TextEditingController();
+  @override
+  State<MarksScreen> createState() => _MarksScreenState();
+}
+
+class _MarksScreenState extends State<MarksScreen> {
+  final logger = Logger();
+
+  final TextEditingController _dsmarcaController = TextEditingController();
 
   final ValueNotifier<String> dropValueMark = ValueNotifier<String>(" ");
 
@@ -22,11 +33,59 @@ class MarksScreen extends StatelessWidget {
     'CND',
   ];
 
-  final List<Map<String, dynamic>> _data = [
-    {'Código': '1', 'Descricao': 'MarcaX', 'Ativo': 'S'},
-    {'Código': '2', 'Descricao': 'MarcaY', 'Ativo': 'F'},
-    {'Código': '3', 'Descricao': 'MarcaZ', 'Ativo': 'S'},
-  ];
+  // Lista de dados para a tabela
+  List<Map<String, dynamic>> _data = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMarks(); // Carregar dados da API quando a tela for carregada
+  }
+
+  // Função para carregar os dados da API
+  Future<void> _loadMarks() async {
+    try {
+      final service = MarkService();
+      List<MarkModel> forms = await service.getAllMark();
+
+      setState(() {
+        _data = forms.map((form) {
+          return {
+            'Código': form.cdMarca ?? 'N/A',
+            'Descricao': form.dsMarca ?? 'N/A',
+            'Ativo': form.stAtivo == 'S' ? 'Sim' : 'Não',
+          };
+        }).toList();
+      });
+    } catch (e) {
+      logger.e('Erro ao carregar dados', error: e);
+    }
+  }
+
+  Future<void> _createMark() async {
+    if (_dsmarcaController.text.isEmpty) {
+      return DialogsInfo.showAlertDialog(context);
+    }
+
+    try {
+      final marks = MarkModel(
+        dsMarca: _dsmarcaController.text,
+        stAtivo: 'S',
+      );
+
+      await MarkService().createMark(marks);
+
+      _loadMarks();
+
+      await Future.delayed(Duration(microseconds: 1));
+      if (!mounted) return;
+
+      DialogsInfo.showSuccessDialog(context);
+      _dsmarcaController.text = '';
+    } catch (e) {
+      DialogsInfo.showErrorDialog(context);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,9 +108,12 @@ class MarksScreen extends StatelessWidget {
                 SizedBox(height: 16),
                 FormInput(
                     labelText: "Descrição Marca",
-                    customController: _customController,
+                    customController: _dsmarcaController,
                     isRequired: true,
                     validadorCustom: (value) {
+                      if (value == null || value.isEmpty) {
+                        return "O campo Descrição Marca não pode estar vazio.";
+                      }
                       return null;
                     },
                     hintText: "MarcaX"),
@@ -63,7 +125,9 @@ class MarksScreen extends StatelessWidget {
                     height: 50,
                     child: CustomButton(
                       text: "Cadastrar",
-                      onPressed: () {},
+                      onPressed: () {
+                        _createMark();
+                      },
                       backgroundColor: AppColors.primaryBlue,
                       icon: LucideIcons.save,
                     ),

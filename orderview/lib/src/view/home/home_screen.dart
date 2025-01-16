@@ -6,14 +6,14 @@ class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  HomeScreenState createState() => HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class HomeScreenState extends State<HomeScreen> {
   int selectedIndex = 1; // Mantenha o estado de selectedIndex
 
   // Função que será chamada quando um item do Sidebar for selecionado
-  void _onSidebarItemTapped(int index) {
+  void onSidebarItemTapped(int index) {
     setState(() {
       selectedIndex = index; // Atualiza o índice do item selecionado
     });
@@ -30,7 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
               selectedIndex:
                   selectedIndex, // Passa o selectedIndex para o Sidebar
               onSelectedIndex:
-                  _onSidebarItemTapped, // Passa a função de callback
+                  onSidebarItemTapped, // Passa a função de callback
             ),
           ),
           VerticalDivider(

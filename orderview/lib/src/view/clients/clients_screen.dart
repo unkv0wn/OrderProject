@@ -1,8 +1,13 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:orderview/src/models/clifor_model.dart';
+import 'package:orderview/src/models/publicplace_model.dart';
 import 'package:orderview/src/utils/colors/colors.dart';
 import 'package:orderview/src/utils/dialoginfos/dialoginfo.dart';
+import 'package:orderview/src/view/clients/service/clients_service.dart';
+import 'package:orderview/src/view/publicplace/service/plublicplace_service.dart';
 import 'package:orderview/src/widgets/button/custombutton_widget.dart';
 import 'package:orderview/src/widgets/date/date_widget.dart';
 import 'package:orderview/src/widgets/dropdown/dropdown_wigdet.dart';
@@ -18,11 +23,23 @@ class ClientsScreen extends StatefulWidget {
 }
 
 class _ClientsScreenState extends State<ClientsScreen> {
-  final TextEditingController _customController = TextEditingController();
+  final logger = Logger();
+
+  final TextEditingController _dsnomeController = TextEditingController();
+  final TextEditingController _nrcpfController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
-  final isRequired = true;
+  final TextEditingController _cdlogradouroController = TextEditingController();
+  final TextEditingController _dsruaController = TextEditingController();
+  final TextEditingController _nrCasaController = TextEditingController();
+  final TextEditingController _dscomplementoController =
+      TextEditingController();
+  final TextEditingController _dsbairroController = TextEditingController();
+  final TextEditingController _dscidadeController = TextEditingController();
+  final TextEditingController _cdcepController = TextEditingController();
 
   DateTime selectedDate = DateTime.now();
+
+  final ValueNotifier<String> dropValue = ValueNotifier<String>(" ");
 
   void _onDateSelected(DateTime pickedDate) {
     setState(() {
@@ -31,39 +48,87 @@ class _ClientsScreenState extends State<ClientsScreen> {
     });
   }
 
-  final ValueNotifier<String> dropValueMark = ValueNotifier<String>(" ");
+  // Lista de dados para a tabela
+  List<Map<String, dynamic>> _data = [];
+  List<Map<String, dynamic>> _logradouro = [];
 
-  final List<String> unidadesDeMedida = [
-    'R',
-    'AVD',
-    'BR',
-    'EST',
-    'CND',
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadClients();
+    _loadPublicPlace(); // Carregar dados da API quando a tela for carregada
+  }
 
-  final List<Map<String, dynamic>> _data = [
-    {
-      'Código': 'A1',
-      'Nome': 'João Silva',
-      'CPF': '123.456.789-00',
-      'Cidade': 'São Paulo',
-      'CEP': '01000-000',
-    },
-    {
-      'Código': 'A2',
-      'Nome': 'Maria Oliveira',
-      'CPF': '987.654.321-00',
-      'Cidade': 'Rio de Janeiro',
-      'CEP': '02000-000',
-    },
-    {
-      'Código': 'A3',
-      'Nome': 'Carlos Pereira',
-      'CPF': '456.789.123-00',
-      'Cidade': 'Belo Horizonte',
-      'CEP': '03000-000',
-    },
-  ];
+  // Função para carregar os dados da API
+  Future<void> _loadPublicPlace() async {
+    try {
+      final service = PlublicplaceService();
+      List<PublicPlaceModel> forms = await service.getAllPlace();
+
+      // Mapeando os dados para o formato da tabela
+      setState(() {
+        _logradouro = forms.map((form) {
+          return {
+            'Código': form.cdLogradouro ?? 'N/A',
+            'Descricao': form.dsLogradouro ?? 'N/A',
+            'Ativo': form.stAtivo == 'S' ? 'Sim' : 'Não',
+          };
+        }).toList(); // Converte a lista de objetos para o formato de mapa
+      });
+    } catch (e) {
+      logger.e('Erro ao carregar dados', error: e);
+    }
+  }
+
+  Future<void> _loadClients() async {
+    try {
+      final service = ClientsService();
+      List<CliforModel> forms = await service.getAllClifor();
+
+      // Mapeando os dados para o formato da tabela
+      setState(() {
+        _data = forms.map((form) {
+          return {
+            'Código': form.idClifor?.toString() ?? 'N/A',
+            'Nome': form.dsNome ?? 'N/A',
+            'CPF': form.nrCpf ?? 'N/A',
+            'Cidade': form.dsCidade ?? 'N/A',
+            'DataNascimento': form.dtNascimento ?? 'N/A',
+            'CEP': form.cdCep ?? 'N/A',
+            'Ativo': form.stAtivo == 'S' ? 'Sim' : 'Não',
+          };
+        }).toList();
+      });
+    } catch (e) {
+      logger.e('Erro ao carregar dados', error: e);
+    }
+  }
+
+  Future<void> _createClient() async {
+    try {
+      final client = CliforModel(
+        dsNome: _dsnomeController.text,
+        nrCpf: _nrcpfController.text,
+        dtNascimento: _dateController.text,
+        cdLogradouro: _cdlogradouroController.text,
+        dsRua: _dsruaController.text,
+        nrRua: _nrCasaController.text,
+        dsComplemento: _dscomplementoController.text,
+        dsBairro: _dsbairroController.text,
+        dsCidade: _dscidadeController.text,
+        cdCep: _cdcepController.text,
+      );
+
+      await ClientsService().createClifor(client);
+
+      _loadClients();
+
+      DialogsInfo.showSuccessDialog(context);
+    } catch (e) {
+      logger.e('Error ao cadastrar Produto', error: e);
+      DialogsInfo.showErrorDialog(context);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -90,7 +155,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
                       flex: 2,
                       child: FormInput(
                         labelText: "Nome",
-                        customController: _customController,
+                        customController: _dsnomeController,
                         isRequired: true,
                         validadorCustom: (value) => null,
                         hintText: "Joao Silva",
@@ -100,7 +165,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
                     Expanded(
                       child: FormInput(
                         labelText: "CPF",
-                        customController: _customController,
+                        customController: _nrcpfController,
                         isRequired: true,
                         validadorCustom: (value) => null,
                         hintText: "123.456.789-00",
@@ -110,7 +175,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
                     DateWidget(
                       dateController: _dateController,
                       selectedDate: selectedDate,
-                      isRequired: isRequired,
+                      isRequired: true,
                       onDateSelected: _onDateSelected,
                       labeltext: 'Data de Nascimento',
                     )
@@ -121,13 +186,20 @@ class _ClientsScreenState extends State<ClientsScreen> {
                   children: [
                     Expanded(
                       child: CustomDropdown(
-                        valueNotifier: dropValueMark,
-                        items: unidadesDeMedida,
+                        valueNotifier: dropValue,
+                        items: _logradouro
+                            .map((logradouro) => logradouro['Código'] as String)
+                            .toList(),
                         hint: "R",
                         labelText: "Logradouro",
                         isRequired: true,
                         onChanged: (newValue) {
-                          print("Selecionado: $newValue");
+                          Map<String, dynamic>? selectedUnit =
+                              _logradouro.firstWhere(
+                            (unit) => unit['Código'] == newValue,
+                          );
+                          _cdlogradouroController.text =
+                              selectedUnit['Código'] ?? '';
                         },
                       ),
                     ),
@@ -136,10 +208,23 @@ class _ClientsScreenState extends State<ClientsScreen> {
                       flex: 6,
                       child: FormInput(
                         labelText: "Rua",
-                        customController: _customController,
+                        customController: _dsruaController,
                         isRequired: true,
                         validadorCustom: (value) => null,
                         hintText: "Rua das Flores",
+                      ),
+                    ),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Expanded(
+                      flex: 1,
+                      child: FormInput(
+                        labelText: "Numero",
+                        customController: _nrCasaController,
+                        isRequired: true,
+                        validadorCustom: (value) => null,
+                        hintText: "125",
                       ),
                     ),
                     SizedBox(width: 10),
@@ -147,7 +232,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
                       flex: 4,
                       child: FormInput(
                         labelText: "Complemento",
-                        customController: _customController,
+                        customController: _dscomplementoController,
                         isRequired: true,
                         validadorCustom: (value) => null,
                         hintText: "Apt 45",
@@ -161,7 +246,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
                     Expanded(
                       child: FormInput(
                         labelText: "Bairro",
-                        customController: _customController,
+                        customController: _dsbairroController,
                         isRequired: true,
                         validadorCustom: (value) => null,
                         hintText: "Centro",
@@ -171,7 +256,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
                     Expanded(
                       child: FormInput(
                         labelText: "Cidade",
-                        customController: _customController,
+                        customController: _dscidadeController,
                         isRequired: true,
                         validadorCustom: (value) => null,
                         hintText: "Sao Paulo",
@@ -181,7 +266,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
                     Expanded(
                       child: FormInput(
                         labelText: "CEP",
-                        customController: _customController,
+                        customController: _cdcepController,
                         isRequired: true,
                         validadorCustom: (value) => null,
                         hintText: "01000-000",
@@ -198,7 +283,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
                     child: CustomButton(
                       text: "Cadastrar",
                       onPressed: () {
-                        DialogsInfo.showErrorDialog(context);
+                        _createClient();
                       },
                       backgroundColor: AppColors.primaryBlue,
                       icon: LucideIcons.save,
@@ -206,16 +291,16 @@ class _ClientsScreenState extends State<ClientsScreen> {
                   ),
                 ),
                 Spacer(),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: SizedBox(
-                      width: 120,
-                      height: 60,
-                      child: CustomDropdown(
-                          valueNotifier: dropValueMark,
-                          items: unidadesDeMedida,
-                          hint: "Filtros")),
-                ),
+                // Align(
+                //   alignment: Alignment.centerLeft,
+                //   child: SizedBox(
+                //       width: 120,
+                //       height: 60,
+                //       child: CustomDropdown(
+                //           valueNotifier: dropValueMark,
+                //           items: unidadesDeMedida,
+                //           hint: "Filtros")),
+                // ),
                 //table
                 SizedBox(
                   width: MediaQuery.of(context).size.width * 0.8,
@@ -259,6 +344,20 @@ class _ClientsScreenState extends State<ClientsScreen> {
                           style: TextStyle(color: Colors.white),
                         ),
                       ),
+                      DataColumn2(
+                        size: ColumnSize.M,
+                        label: Text(
+                          'Data Nascimento',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      DataColumn2(
+                        size: ColumnSize.S,
+                        label: Text(
+                          'Ativo',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
                     ],
                     cellBuilders: [
                       (row) => DataCell(Text(row['Código'],
@@ -270,6 +369,10 @@ class _ClientsScreenState extends State<ClientsScreen> {
                       (row) => DataCell(Text(row['Cidade'],
                           style: TextStyle(color: Colors.white))),
                       (row) => DataCell(Text(row['CEP'],
+                          style: TextStyle(color: Colors.white))),
+                      (row) => DataCell(Text(row['DataNascimento'],
+                          style: TextStyle(color: Colors.white))),
+                      (row) => DataCell(Text(row['Ativo'],
                           style: TextStyle(color: Colors.white))),
                     ],
                   ),

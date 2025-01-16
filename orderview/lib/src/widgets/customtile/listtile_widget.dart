@@ -22,7 +22,7 @@ class ListTileCustom extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
           color: selectedIndex == index
-              ? Color(0xFF24202C).withOpacity(0.8)
+              ? Color(0xFF24202C).withValues(alpha: 0.8)
               : null,
           borderRadius: BorderRadius.only(
               topRight: Radius.circular(10), bottomRight: Radius.circular(10))),

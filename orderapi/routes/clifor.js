@@ -59,7 +59,7 @@ router.get("/", async (req, res) => {
     },
   });
 
-  res.status(200).send({ data });
+  res.status(200).send(data);
 });
 
 //Puxando Cliente pelo id_clifor

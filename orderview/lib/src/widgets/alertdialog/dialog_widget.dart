@@ -67,7 +67,7 @@ class CustomDialog {
                       .center, // Garantir que a mensagem está centralizada
                   style: GoogleFonts.poppins(
                       fontWeight: FontWeight.w500,
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withValues(alpha: 0.5),
                       fontSize: 17,
                       letterSpacing: 2.0),
                 ),
@@ -109,4 +109,3 @@ class CustomDialog {
     );
   }
 }
-

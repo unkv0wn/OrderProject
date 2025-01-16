@@ -1,7 +1,11 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:orderview/src/models/paymentform_model.dart';
 import 'package:orderview/src/utils/colors/colors.dart';
+import 'package:orderview/src/utils/dialoginfos/dialoginfo.dart';
+import 'package:orderview/src/view/paymentform/services/paymentform_services.dart';
 import 'package:orderview/src/widgets/button/custombutton_widget.dart';
 import 'package:orderview/src/widgets/dropdown/dropdown_wigdet.dart';
 import 'package:orderview/src/widgets/form/forminput_widgets.dart';
@@ -15,17 +19,67 @@ class PaymentformScreen extends StatefulWidget {
 }
 
 class _PaymentformScreenState extends State<PaymentformScreen> {
-  final TextEditingController _customController = TextEditingController();
+  final logger = Logger();
+
+  final TextEditingController _cdFormaController = TextEditingController();
+  final TextEditingController _dsFormaController = TextEditingController();
   final ValueNotifier<String> dropValueMark = ValueNotifier<String>(" ");
   final List<String> unidadesDeMedida = ['R', 'AVD', 'BR', 'EST', 'CND'];
-  final int _rowsPerPage = 10;
+  // Lista de dados para a tabela
+  List<Map<String, dynamic>> _data = [];
 
-  // Simulação de dados (Fonte para a tabela)
-  final List<Map<String, dynamic>> _data = [
-    {'Código': 'DI', 'Descricao': 'DINHEIRO', 'Ativo': 'S'},
-    {'Código': 'BL', 'Descricao': 'BOLETO', 'Ativo': 'F'},
-    {'Código': 'PIX', 'Descricao': 'PIX', 'Ativo': 'S'},
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadPaymentForms(); // Carregar dados da API quando a tela for carregada
+  }
+
+  // Função para carregar os dados da API
+  Future<void> _loadPaymentForms() async {
+    try {
+      final service = PaymentformServices();
+      List<PaymentFormModel> forms = await service.getAllPaymentForm();
+
+      setState(() {
+        _data = forms.map((form) {
+          return {
+            'Código': form.cdForma ?? 'N/A',
+            'Descricao': form.dsForma ?? 'N/A',
+            'Ativo': form.stAtivo == 'S' ? 'Sim' : 'Não',
+          };
+        }).toList();
+      });
+    } catch (e) {
+      logger.e('Erro ao carregar dados', error: e);
+    }
+  }
+
+  Future<void> _createPaymentForm() async {
+    if (_cdFormaController.text.isEmpty || _dsFormaController.text.isEmpty) {
+      return DialogsInfo.showAlertDialog(context);
+    }
+
+    try {
+      final paymentForm = PaymentFormModel(
+          cdForma: _cdFormaController.text,
+          dsForma: _dsFormaController.text,
+          stAtivo: 'S');
+
+      await PaymentformServices().createPaymentForm(paymentForm);
+
+      _loadPaymentForms();
+
+      await Future.delayed(Duration(microseconds: 1));
+      if (!mounted) return;
+
+      DialogsInfo.showSuccessDialog(context);
+      _cdFormaController.text = '';
+      _dsFormaController.text = '';
+    } catch (e) {
+      print(e);
+      DialogsInfo.showErrorDialog(context);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +102,7 @@ class _PaymentformScreenState extends State<PaymentformScreen> {
                 SizedBox(height: 16),
                 FormInput(
                   labelText: "Codigo Forma Pagamento",
-                  customController: _customController,
+                  customController: _cdFormaController,
                   isRequired: true,
                   validadorCustom: (value) {
                     return null;
@@ -58,7 +112,7 @@ class _PaymentformScreenState extends State<PaymentformScreen> {
                 SizedBox(height: 8),
                 FormInput(
                   labelText: "Descrição Forma Pagamento",
-                  customController: _customController,
+                  customController: _dsFormaController,
                   isRequired: true,
                   validadorCustom: (value) {
                     return null;
@@ -73,7 +127,9 @@ class _PaymentformScreenState extends State<PaymentformScreen> {
                     height: 50,
                     child: CustomButton(
                       text: "Cadastrar",
-                      onPressed: () {},
+                      onPressed: () {
+                        _createPaymentForm();
+                      },
                       backgroundColor: AppColors.primaryBlue,
                       icon: LucideIcons.save,
                     ),

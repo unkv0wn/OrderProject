@@ -6,8 +6,8 @@ import 'package:orderview/src/view/home/home_screen.dart';
   final GlobalKey<NavigatorState> kGlobalKeyNavigator =
     GlobalKey<NavigatorState>();
 
-class myApp extends StatelessWidget {
-  const myApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
 
 

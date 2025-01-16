@@ -1,17 +1,28 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:orderview/src/models/unitymeasurement_model.dart';
 import 'package:orderview/src/utils/colors/colors.dart';
+import 'package:orderview/src/utils/dialoginfos/dialoginfo.dart';
+import 'package:orderview/src/view/unit/service/unit_service.dart';
 import 'package:orderview/src/widgets/button/custombutton_widget.dart';
 import 'package:orderview/src/widgets/dropdown/dropdown_wigdet.dart';
 import 'package:orderview/src/widgets/form/forminput_widgets.dart';
 import 'package:orderview/src/widgets/table/table_widget.dart';
 
-class MeasurementScreen extends StatelessWidget {
-  MeasurementScreen({super.key});
+class MeasurementScreen extends StatefulWidget {
+  const MeasurementScreen({super.key});
 
-  final TextEditingController _customController = TextEditingController();
+  @override
+  State<MeasurementScreen> createState() => _MeasurementScreenState();
+}
 
+class _MeasurementScreenState extends State<MeasurementScreen> {
+  final logger = Logger();
+
+  final TextEditingController _cdUnidadeController = TextEditingController();
+  final TextEditingController _dsUnidadeController = TextEditingController();
   final ValueNotifier<String> dropValueMark = ValueNotifier<String>(" ");
 
   final List<String> unidadesDeMedida = [
@@ -22,11 +33,60 @@ class MeasurementScreen extends StatelessWidget {
     'CND',
   ];
 
-    final List<Map<String, dynamic>> _data = [
-    {'Código': 'UN', 'Descricao': 'UNIDADE', 'Ativo': 'S'},
-    {'Código': 'KG', 'Descricao': 'KILOS', 'Ativo': 'F'},
-    {'Código': 'GR', 'Descricao': 'GRAMAS', 'Ativo': 'S'},
-  ];
+  // Lista de dados para a tabela
+  List<Map<String, dynamic>> _data = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUnits(); // Carregar dados da API quando a tela for carregada
+  }
+
+  // Função para carregar os dados da API
+  Future<void> _loadUnits() async {
+    try {
+      final service = UnitService();
+      List<UnitMeasurementModel> forms = await service.getAllUnitys();
+
+      setState(() {
+        _data = forms.map((form) {
+          return {
+            'Código': form.cdUnidade ?? 'N/A',
+            'Descricao': form.dsUnidade ?? 'N/A',
+            'Ativo': form.stAtivo == 'S' ? 'Sim' : 'Não',
+          };
+        }).toList();
+      });
+    } catch (e) {
+      logger.e('Erro ao carregar dados', error: e);
+    }
+  }
+
+  Future<void> _createUnit() async {
+    if (_cdUnidadeController.text.isEmpty ||
+        _dsUnidadeController.text.isEmpty) {
+      return DialogsInfo.showAlertDialog(context);
+    }
+
+    try {
+      final unitmeasurement = UnitMeasurementModel(
+          cdUnidade: _cdUnidadeController.text,
+          dsUnidade: _dsUnidadeController.text,
+          stAtivo: 'S');
+
+      await UnitService().createUnitMeasurement(unitmeasurement);
+
+      DialogsInfo.showSuccessDialog(context);
+
+      _loadUnits();
+
+      _cdUnidadeController.text = '';
+      _dsUnidadeController.text = '';
+    } catch (e) {
+      print(e);
+      DialogsInfo.showErrorDialog(context);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +109,7 @@ class MeasurementScreen extends StatelessWidget {
                 SizedBox(height: 16),
                 FormInput(
                     labelText: "Codigo Unidade Medida",
-                    customController: _customController,
+                    customController: _cdUnidadeController,
                     isRequired: true,
                     validadorCustom: (value) {
                       return null;
@@ -60,7 +120,7 @@ class MeasurementScreen extends StatelessWidget {
                 ),
                 FormInput(
                     labelText: "Descrição Unidade Medida",
-                    customController: _customController,
+                    customController: _dsUnidadeController,
                     isRequired: true,
                     validadorCustom: (value) {
                       return null;
@@ -74,7 +134,9 @@ class MeasurementScreen extends StatelessWidget {
                     height: 50,
                     child: CustomButton(
                       text: "Cadastrar",
-                      onPressed: () {},
+                      onPressed: () {
+                        _createUnit();
+                      },
                       backgroundColor: AppColors.primaryBlue,
                       icon: LucideIcons.save,
                     ),
@@ -92,7 +154,7 @@ class MeasurementScreen extends StatelessWidget {
                           hint: "Filtros")),
                 ),
                 SizedBox(
-                   width: MediaQuery.of(context).size.width * 0.8,
+                  width: MediaQuery.of(context).size.width * 0.8,
                   height: MediaQuery.of(context).size.height * 0.4,
                   child: CustomPaginatedDataTable<Map<String, dynamic>>(
                     data:

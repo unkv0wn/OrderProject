@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:orderview/src/utils/colors/colors.dart';
 import 'package:orderview/src/widgets/alertdialog/dialog_widget.dart';
 
@@ -11,9 +12,7 @@ class DialogsInfo {
       icon: Icons.check_circle,
       iconColor: AppColors.primaryBlue,
       confirmText: "OK",
-      onConfirm: () {
-        print("Ação confirmada!");
-      },
+      onConfirm: () {},
     );
   }
 
@@ -25,9 +24,7 @@ class DialogsInfo {
       icon: Icons.error,
       iconColor: Colors.red,
       confirmText: "Tentar Novamente",
-      onConfirm: () {
-        print("Tentando novamente...");
-      },
+      onConfirm: () {},
     );
   }
 
@@ -39,9 +36,19 @@ class DialogsInfo {
       icon: Icons.warning,
       iconColor: Colors.orange,
       confirmText: "Continuar",
-      onConfirm: () {
-        print("Operação continuada!");
-      },
+      onConfirm: () {},
+    );
+  }
+
+  static void showAlertDialog(BuildContext context) {
+    CustomDialog.show(
+      context,
+      title: "Alerta",
+      message: "Verifique novamente os campos, estão corretos?",
+      icon: LucideIcons.badgeAlert,
+      iconColor: Colors.yellow,
+      confirmText: "Continuar",
+      onConfirm: () {},
     );
   }
 }
