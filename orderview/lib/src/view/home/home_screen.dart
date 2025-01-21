@@ -10,7 +10,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class HomeScreenState extends State<HomeScreen> {
-  int selectedIndex = 1; // Mantenha o estado de selectedIndex
+  int selectedIndex = 7; // Mantenha o estado de selectedIndex
 
   // Função que será chamada quando um item do Sidebar for selecionado
   void onSidebarItemTapped(int index) {

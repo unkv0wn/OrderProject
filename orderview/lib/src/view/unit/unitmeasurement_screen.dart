@@ -83,7 +83,7 @@ class _MeasurementScreenState extends State<MeasurementScreen> {
       _cdUnidadeController.text = '';
       _dsUnidadeController.text = '';
     } catch (e) {
-      print(e);
+
       DialogsInfo.showErrorDialog(context);
     }
   }

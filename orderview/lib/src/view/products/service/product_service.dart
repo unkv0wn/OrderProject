@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:orderview/src/models/product_model.dart';
-import 'package:orderview/src/models/publicplace_model.dart';
 import 'package:orderview/src/service/apiservice/api_service.dart';
 
 class ProductService {

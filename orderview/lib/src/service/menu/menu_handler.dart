@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:orderview/src/view/clients/clients_screen.dart';
 import 'package:orderview/src/view/error/erros_screen.dart';
 import 'package:orderview/src/view/mark/marks_screen.dart';
+import 'package:orderview/src/view/order/order_screen.dart';
 import 'package:orderview/src/view/paymentform/paymentform_screen.dart';
 import 'package:orderview/src/view/products/products_screen.dart';
 import 'package:orderview/src/view/publicplace/publicplace_screen.dart';
@@ -24,7 +25,7 @@ Widget menuHandler(int index) {
     case 6:
       return ProductsScreen();
     case 7:
-      return const Text("Cadastro de Pedidos");
+      return OrderScreen();
     default:
       return const ErrorScreen();
   }
