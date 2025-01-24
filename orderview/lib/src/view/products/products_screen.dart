@@ -158,6 +158,9 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
       _loadProducts();
 
+      await Future.delayed(Duration(microseconds: 1));
+      if (!mounted) return;
+
       DialogsInfo.showSuccessDialog(context);
     } catch (e) {
       logger.e('Error ao cadastrar Produto', error: e);

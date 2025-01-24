@@ -9,6 +9,7 @@ class StatusIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     Color statusColor = _getStatusColor(status);
     Icon iconChange = _getStatusIcon(status);
+    String statusText = _getStatusText(status);
 
     return Container(
       width: 130,
@@ -31,7 +32,7 @@ class StatusIndicator extends StatelessWidget {
           iconChange, // Aqui o widget Icon já está completo
           SizedBox(width: 8),
           Text(
-            status,
+            statusText,
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
         ],
@@ -41,11 +42,11 @@ class StatusIndicator extends StatelessWidget {
 
   Color _getStatusColor(String status) {
     switch (status) {
-      case 'Concluído':
-        return Colors.green;
-      case 'Pendente':
+      case '0':
         return Colors.orange;
-      case 'Cancelado':
+      case '1':
+        return Colors.green;
+      case '2':
         return Colors.red;
       default:
         return Colors.grey;
@@ -54,14 +55,27 @@ class StatusIndicator extends StatelessWidget {
 
   Icon _getStatusIcon(String status) {
     switch (status) {
-      case 'Concluído':
-        return Icon(Icons.check_circle, color: Colors.white, size: 15);
-      case 'Pendente':
+      case '0':
         return Icon(Icons.timelapse, color: Colors.white, size: 15);
-      case 'Cancelado':
+      case '1':
+        return Icon(Icons.check_circle, color: Colors.white, size: 15);
+      case '2':
         return Icon(Icons.cancel, color: Colors.white, size: 15);
       default:
         return Icon(Icons.help_outline, color: Colors.white, size: 15);
     }
+  }
+}
+
+String _getStatusText(String status) {
+  switch (status) {
+    case '0':
+      return "Pendente";
+    case '1':
+      return "Concluido";
+    case '2':
+      return "Cancelado";
+    default:
+      return "N/A";
   }
 }

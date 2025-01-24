@@ -30,4 +30,16 @@ class ProductService {
       throw Exception('Erro ao criar produto: $e');
     }
   }
+
+  Future<ProductModel> getProductById(String id) async {
+    try {
+      // Passando o ID como parâmetro de consulta
+      Response response = await dio.get('/product/$id');
+
+      return ProductModel.fromJson(response.data.first);
+    } catch (e) {
+      throw Exception(
+          'Erro ao carregar dados do cliente ou forma de pagamento: $e');
+    }
+  }
 }

@@ -76,7 +76,7 @@ class _PaymentformScreenState extends State<PaymentformScreen> {
       _cdFormaController.text = '';
       _dsFormaController.text = '';
     } catch (e) {
-      print(e);
+      logger.e('Erro ao carregar dados', error: e);
       DialogsInfo.showErrorDialog(context);
     }
   }

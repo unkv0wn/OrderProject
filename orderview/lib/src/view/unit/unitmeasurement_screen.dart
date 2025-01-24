@@ -76,14 +76,19 @@ class _MeasurementScreenState extends State<MeasurementScreen> {
 
       await UnitService().createUnitMeasurement(unitmeasurement);
 
+      await Future.delayed(Duration(microseconds: 1));
+      if (!mounted) return;
+
       DialogsInfo.showSuccessDialog(context);
 
       _loadUnits();
 
+      await Future.delayed(Duration(microseconds: 1));
+      if (!mounted) return;
+
       _cdUnidadeController.text = '';
       _dsUnidadeController.text = '';
     } catch (e) {
-
       DialogsInfo.showErrorDialog(context);
     }
   }

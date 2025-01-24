@@ -1,8 +1,13 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:orderview/src/view/order/new_orders/ClientsDialog.dart';
-import 'package:orderview/src/view/order/new_orders/ItensDialog.dart';
+import 'package:orderview/src/models/clifor_model.dart';
+import 'package:orderview/src/models/order_model.dart';
+import 'package:orderview/src/view/clients/service/clients_service.dart';
+import 'package:orderview/src/view/order/new_orders/clientdialog.dart';
+import 'package:orderview/src/view/order/new_orders/itensdialog.dart';
+import 'package:orderview/src/view/order/services/order_service.dart';
 import 'package:orderview/src/widgets/button/custombutton_widget.dart';
 import 'package:orderview/src/widgets/iconbutton/iconbutton_wiget.dart';
 import 'package:orderview/src/widgets/statusIndicator/statusindicator_widget.dart';
@@ -16,32 +21,45 @@ class OrderScreen extends StatefulWidget {
 }
 
 class _OrderScreenState extends State<OrderScreen> {
-  final List<Map<String, dynamic>> _data = [
-    {
-      'Código': '1',
-      'Cliente': 'João Silva',
-      'Status': 'Concluído',
-      'ValorTotal': '150.00',
-    },
-    {
-      'Código': '2',
-      'Cliente': 'João Silva',
-      'Status': 'Concluído',
-      'ValorTotal': '150.00',
-    },
-    {
-      'Código': '3',
-      'Cliente': 'João Silva',
-      'Status': 'Pendente',
-      'ValorTotal': '150.00',
-    },
-    {
-      'Código': '4',
-      'Cliente': 'João Silva',
-      'Status': 'Cancelado',
-      'ValorTotal': '150.00',
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadOrder();
+  }
+
+  List<Map<String, dynamic>> _data = [];
+
+  final logger = Logger();
+
+  Future<void> _loadOrder() async {
+    try {
+      final service = OrderService();
+      List<OrderModel> forms = await service.getAllOrders();
+
+      final markload = ClientsService();
+      List<CliforModel> fromClients = await markload.getAllClifor();
+
+      setState(() {
+        _data = forms.map((form) {
+          CliforModel marca = fromClients.firstWhere(
+            (marca) => marca.idClifor == form.idClifor,
+            orElse: () =>
+                CliforModel(idClifor: 0, dsNome: 'Cliente Não Encontrado'),
+          );
+
+          return {
+            'Código': form.idPedido.toString(),
+            'Cliente': marca.dsNome,
+            'Status': form.stPedido ?? 'N/A',
+            'Pagamento': form.cdForma ?? 'N/A',
+            'ValorTotal': form.valorTotal.toString()
+          };
+        }).toList();
+      });
+    } catch (e) {
+      logger.e('Erro ao carregar dados', error: e);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,8 +85,8 @@ class _OrderScreenState extends State<OrderScreen> {
                   child: Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(colors: [
-                        Colors.deepPurple.withValues(alpha: 0.5),
-                        Colors.purpleAccent.withValues(alpha: 0.7)
+                        Color(0xFF0EA5E9),
+                        Color(0xFF2563EB)
                       ]), // Cor de fundo do card
                       borderRadius:
                           BorderRadius.circular(16), // Cantos arredondados
@@ -82,7 +100,7 @@ class _OrderScreenState extends State<OrderScreen> {
                           child: Icon(
                             LucideIcons.circleDollarSign,
                             size: 150,
-                            color: Colors.blue.shade200.withOpacity(0.2),
+                            color: Colors.blue.shade200.withValues(alpha: 0.2),
                           ),
                         ),
                         Padding(
@@ -132,16 +150,13 @@ class _OrderScreenState extends State<OrderScreen> {
                     child: CustomButton(
                       text: "Novo",
                       onPressed: () {
-                        // Clientsdialog.show(
-                        //   context,
-                        //   confirmText: "OK",
-                        //   onConfirm: () {
-                        //     Itensdialog.show(context,
-                        //         confirmText: "OK", onConfirm: () {});
-                        //   },
-                        // );
-                        Itensdialog.show(context,
-                            confirmText: "OK", onConfirm: () {});
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return Dialog(
+                                child: Clientdialog(),
+                              );
+                            });
                       },
                       backgroundColor: Colors.greenAccent.shade700,
                       icon: LucideIcons.filePlus2,
@@ -178,6 +193,13 @@ class _OrderScreenState extends State<OrderScreen> {
                       DataColumn2(
                         size: ColumnSize.S,
                         label: Text(
+                          'Form Pagamento',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      DataColumn2(
+                        size: ColumnSize.S,
+                        label: Text(
                           'Valor total',
                           style: TextStyle(color: Colors.white),
                         ),
@@ -198,19 +220,47 @@ class _OrderScreenState extends State<OrderScreen> {
                       (row) => DataCell(
                             StatusIndicator(status: row['Status']),
                           ),
+                      (row) => DataCell(Text(row['Pagamento'],
+                          style: TextStyle(color: Colors.white))),
                       (row) => DataCell(Text(row['ValorTotal'] ?? '0',
                           style: TextStyle(color: Colors.white))),
                       (row) => DataCell(Row(
                             children: [
                               CustomIconButton(
                                 icon: LucideIcons.pencil,
-                                onPressed: () {},
+                                onPressed: () {
+                                  int idPedidoChange = int.parse(row['Código']);
+                                  showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return Dialog(
+                                          backgroundColor: Colors.transparent,
+                                          child: Itensdialog(
+                                            idPedido: idPedidoChange,
+                                            isEdit: false,
+                                          ),
+                                        );
+                                      });
+                                },
                                 color: Colors.amber,
                                 tooltip: "Editar",
                               ),
                               CustomIconButton(
                                 icon: LucideIcons.search,
-                                onPressed: () {},
+                                onPressed: () {
+                                  int idPedidoChange = int.parse(row['Código']);
+                                  showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return Dialog(
+                                          backgroundColor: Colors.transparent,
+                                          child: Itensdialog(
+                                            idPedido: idPedidoChange,
+                                            isEdit: true,
+                                          ),
+                                        );
+                                      });
+                                },
                                 color: Colors.blueAccent,
                                 tooltip: "Vizualizar",
                               ),

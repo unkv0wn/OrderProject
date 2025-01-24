@@ -30,4 +30,16 @@ class ClientsService {
       throw Exception('Erro ao criar produto: $e');
     }
   }
+
+  Future<CliforModel> getCliforById(String id) async {
+    try {
+      // Passando o ID como parâmetro de consulta
+      Response response = await dio.get('/clifor/$id');
+
+      return CliforModel.fromJson(response.data.first);
+    } catch (e) {
+      throw Exception(
+          'Erro ao carregar dados do cliente ou forma de pagamento: $e');
+    }
+  }
 }

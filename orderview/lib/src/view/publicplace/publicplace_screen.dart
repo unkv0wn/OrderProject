@@ -61,14 +61,17 @@ class _PublicplaceScreenState extends State<PublicplaceScreen> {
     }
 
     try {
-      final PublicPlace = PublicPlaceModel(
+      final publicPlace = PublicPlaceModel(
           cdLogradouro: _cdLogradouroController.text,
           dsLogradouro: _dsLogradouroController.text,
           stAtivo: 'S');
 
-      await PlublicplaceService().createPublicPlace(PublicPlace);
+      await PlublicplaceService().createPublicPlace(publicPlace);
 
       _loadPublicPlace();
+
+      await Future.delayed(Duration(microseconds: 1));
+      if (!mounted) return;
 
       DialogsInfo.showSuccessDialog(context);
     } catch (e) {

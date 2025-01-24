@@ -123,6 +123,10 @@ class _ClientsScreenState extends State<ClientsScreen> {
 
       _loadClients();
 
+      await Future.delayed(Duration(microseconds: 1));
+      if (!mounted) return;
+
+
       DialogsInfo.showSuccessDialog(context);
     } catch (e) {
       logger.e('Error ao cadastrar Produto', error: e);

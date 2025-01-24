@@ -34,4 +34,16 @@ class PaymentformServices {
       throw Exception('Erro ao cadastrar forma de pagamento: $e');
     }
   }
+
+  Future<PaymentFormModel> getPaymentToId(String id) async {
+    try {
+      // Passando o ID como parâmetro de consulta
+      Response response = await dio.get('/paymentform/${id.toUpperCase()}');
+
+      return PaymentFormModel.fromJson(response.data.first);
+    } catch (e) {
+      throw Exception(
+          'Erro ao carregar dados do cliente ou forma de pagamento: $e');
+    }
+  }
 }
