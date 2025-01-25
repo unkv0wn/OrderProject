@@ -144,7 +144,7 @@ O **OrderProject** é uma API RESTful para controle de pedidos de uma empresa, c
       - ex: - localhost:3000/publicplace/r
 
   - Consultar Marcas
-    - localhost:3000/mark${id}
+    - localhost:3000/mark$/{id}
   
 ### Rotas de deletar metodo DELETE
 

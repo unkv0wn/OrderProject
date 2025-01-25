@@ -22,10 +22,11 @@ async function UpdateTotalValue(pedidoId) {
 }
 
 router.post("/", async (req, res) => {
-    const { id_pedido, id_produto, quantidade, vl_unitario, desconto } = req.body;
+    // Atribui valor default de 0 para desconto se não for enviado
+    const { id_pedido, id_produto, quantidade, vl_unitario, desconto = 0 } = req.body;
 
     // Lista de campos obrigatórios
-    const requiredFields = ['id_pedido', 'id_produto', 'quantidade', 'vl_unitario', 'desconto'];
+    const requiredFields = ['id_pedido', 'id_produto', 'quantidade', 'vl_unitario'];
 
     // Valida se algum campo obrigatório está faltando
     for (let field of requiredFields) {
@@ -87,24 +88,38 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-//Rota para listar items de um pedido
+// Rota para listar items de um pedido
 router.get("/listitem/:id", async (req, res) => {
-try {
-  const { id } = req.params;
-
-  const data = await OrderItem.findAll({
-    where: {
-      id_pedido: id
+    try {
+      const { id } = req.params;
+  
+      // Buscar os itens do pedido no banco de dados
+      const data = await OrderItem.findAll({
+        where: {
+          id_pedido: id
+        }
+      });
+  
+      // Processar os dados para garantir que os números sejam retornados corretamente
+      const formattedData = data.map(item => {
+        return {
+          ...item.dataValues, // Pega todos os campos do item
+          quantidade: parseFloat(item.quantidade), // Converter para float
+          vl_unitario: parseFloat(item.vl_unitario), // Converter para float
+          desconto: parseFloat(item.desconto), // Converter para float
+          vl_total: parseFloat(item.vl_total) // Converter para float
+        };
+      });
+  
+      // Enviar a resposta com os dados processados
+      res.status(200).send(formattedData);
+    } catch (error) {
+      console.log(error);
+      res.status(500).send({
+        message: "Erro ao processar requisição"
+      });
     }
-  })
-
-  res.status(200).send(data)
-} catch (error) {
-  console.log(error)
-  res.status(500).send({
-    message: "Erro ao processar requisição"
-  })
-}
-})
+  });
+  
 
 module.exports = router;

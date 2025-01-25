@@ -33,25 +33,15 @@ const Order = sequelize.define("pedido", {
   st_pedido: {
     type: DataTypes.STRING(1),
     allowNull: false,
-    defaultValue: "R",
+    defaultValue: "0",
     set(value) {
       this.setDataValue("st_pedido", value.toUpperCase());
     }
-  },
-  ds_observacao: {
-    type:  DataTypes.STRING(5000),
-    allowNull: false,
-    defaultValue: ""
   },
   valor_total: {
     type:  DataTypes.DECIMAL(10, 2),
     allowNull: false,
     defaultValue: 0
-  },
-  dt_entrega: {
-    type:  DataTypes.DATE,
-    allowNull: false,
-    defaultValue: Sequelize.fn("NOW"),
   },
 }, {
   tableName: "pedido",
@@ -59,3 +49,10 @@ const Order = sequelize.define("pedido", {
 });
 
 module.exports = Order;
+
+
+/*
+0 - Pendete
+1 - Concluido
+2 - Cancelado
+*/

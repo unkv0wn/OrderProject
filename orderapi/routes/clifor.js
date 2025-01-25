@@ -80,7 +80,7 @@ router.get("/:id", async (req, res) => {
       })
     }
 
-    res.status(200).send({data})
+    res.status(200).send(data)
   } catch (error) {
     console.log(error);
     res.status(500).send({

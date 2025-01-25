@@ -34,7 +34,8 @@ const OrderItem = sequelize.define('itempedido', {
     },
     desconto: {
         type: DataTypes.DECIMAL(10, 2),
-        allowNull: false
+        allowNull: false,
+        defaultValue: 0
     },
     vl_total: {
         type: DataTypes.DECIMAL(10, 2),
@@ -46,6 +47,10 @@ const OrderItem = sequelize.define('itempedido', {
     hooks: {
         // Hook antes de salvar o item, para calcular o vl_total
         beforeSave: (orderItem) => {
+                        // Garantir que o desconto seja 0 caso não tenha valor
+                        if (orderItem.desconto === null || orderItem.desconto === undefined) {
+                            orderItem.desconto = 0;
+                        }
             // Calcular vl_total = (vl_unitario * quantidade) - desconto
             orderItem.vl_total = (orderItem.vl_unitario * orderItem.quantidade) - orderItem.desconto;
         }
